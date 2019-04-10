@@ -5,6 +5,7 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms as ts
 from matplotlib import pyplot as plt
 from skimage import io
+from PIL import Image as im
 #firstly, fit the torch api
 def to_torch(path):
     for c,i in enumerate(os.listdir(path)):
@@ -29,20 +30,20 @@ def prep(path,trans_list=[ts.Resize((255,255)),ts.CenterCrop(224),ts.ToTensor()]
     data=torch.utils.data.DataLoader(dataset,batch_size=batch_size,shuffle=shuffle)
     return data
 
-def to_tensor(x):
-    img=io.imread(x)
-    img.resize(224,224,3)
-    img=img.reshape(1,224,224,3)
-    img2tensor=torch.from_numpy(img).type(torch.float32).cuda()
-    img2tensor=img2tensor.permute(0,3,1,2)
-    return img2tensor
+def to_tensor_cuda(path):
+    x=im.open(path)
+    func=ts.ToTensor()
+    func1=ts.Resize((224,224))
+    img2tensor=func1(x)
+    img2tensor=func(img2tensor)
+    return img2tensor.view(-1,3,224,224).cuda()
 
 
 
 
 
 if __name__=="__main__":
-    data=prep('./data_torch',batch_size=10)
+    data=prep('./data_torch',batch_size=10,trans_list=None)
     for i,j in data:
         show(i[0])
         print('this is a dog!') if j[0]==1 else print('this is a cat!')
